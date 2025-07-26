@@ -1,14 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Briefcase, Users, Award, TrendingUp, ArrowRight, Bell } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Briefcase, Users, Award, TrendingUp, ArrowRight, Bell, LayoutDashboard } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  // New state to hold user data if logged in
+  const [user, setUser] = useState(null);
+
+  // Check for user token on component load
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedUser = jwtDecode(token);
+        setUser(decodedUser);
+      } catch (error) {
+        console.error("Invalid token:", error);
+        // Optional: clear invalid token
+        localStorage.removeItem('token');
+      }
+    }
+  }, []);
 
   const announcements = [
     {
       title: "New IT Officer Positions Available",
-      description: "Government of India announces 500+ new IT Officer positions across various departments. Applications open until March 31, 2025.",
+      description: "Government of India announces 500+ new IT Officer positions across various departments. Applications open until August 31, 2025.",
       image: "https://images.pexels.com/photos/3184298/pexels-photo-3184298.jpeg?auto=compress&cs=tinysrgb&w=800",
       urgent: true
     },
@@ -40,7 +58,7 @@ const Home = () => {
       location: "New Delhi",
       experience: "5-8 years",
       salary: "₹8-12 LPA",
-      deadline: "Mar 25, 2025"
+      deadline: "Aug 25, 2025"
     },
     {
       title: "Data Scientist",
@@ -48,7 +66,7 @@ const Home = () => {
       location: "Mumbai",
       experience: "3-5 years",
       salary: "₹7-10 LPA",
-      deadline: "Mar 30, 2025"
+      deadline: "Aug 30, 2025"
     },
     {
       title: "Cybersecurity Analyst",
@@ -56,7 +74,7 @@ const Home = () => {
       location: "Bengaluru",
       experience: "4-6 years",
       salary: "₹9-13 LPA",
-      deadline: "Apr 05, 2025"
+      deadline: "Sep 05, 2025"
     }
   ];
 
@@ -65,7 +83,7 @@ const Home = () => {
       setCurrentSlide((prev) => (prev + 1) % announcements.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [announcements.length]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % announcements.length);
@@ -76,7 +94,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section with Carousel */}
       <section className="relative h-96 md:h-[500px] overflow-hidden">
         <div className="absolute inset-0">
@@ -112,12 +130,22 @@ const Home = () => {
                 <span>Browse Jobs</span>
                 <ArrowRight size={20} />
               </Link>
-              <Link
-                to="/apply"
-                className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors"
-              >
-                Apply Now
-              </Link>
+              {/* Show "Apply Now" if logged out, "Dashboard" if logged in */}
+              {user ? (
+                 <Link
+                    to="/dashboard"
+                    className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors"
+                 >
+                    Go to Dashboard
+                 </Link>
+              ) : (
+                <Link
+                    to="/register"
+                    className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors"
+                >
+                    Apply Now
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -229,29 +257,59 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Call to Action Section */}
+      {/* === UPDATED Call to Action Section === */}
       <section className="py-16 bg-blue-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Start Your Government IT Career?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of IT professionals who have found their dream careers in government sector
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <Link
-              to="/register"
-              className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-            >
-              Create Account
-            </Link>
-            <Link
-              to="/about"
-              className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
-            >
-              Learn More
-            </Link>
-          </div>
+            {user ? (
+                // Logged-in View
+                <>
+                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+                        Welcome Back!
+                    </h2>
+                    <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+                        You're one step closer to your dream government job. Manage your profile or continue your job search.
+                    </p>
+                    <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                        <Link
+                          to="/dashboard"
+                          className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center space-x-2"
+                        >
+                          <LayoutDashboard size={20} />
+                          <span>Go to Dashboard</span>
+                        </Link>
+                        <Link
+                          to="/jobs"
+                          className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+                        >
+                          Browse Jobs
+                        </Link>
+                    </div>
+                </>
+            ) : (
+                // Logged-out View
+                <>
+                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+                        Ready to Start Your Government IT Career?
+                    </h2>
+                    <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+                        Join thousands of IT professionals who have found their dream careers in the government sector.
+                    </p>
+                    <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                        <Link
+                          to="/register"
+                          className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                        >
+                          Create Account
+                        </Link>
+                        <Link
+                          to="/about"
+                          className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+                        >
+                          Learn More
+                        </Link>
+                    </div>
+                </>
+            )}
         </div>
       </section>
     </div>
