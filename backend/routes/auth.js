@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -90,5 +91,29 @@ router.post('/login', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+
+
+/**
+ * @route   GET /api/auth/me
+ * @desc    Get logged-in user's profile data
+ * @access  Private
+ */
+router.get('/me', protect, async (req, res) => {
+  try {
+    // The 'protect' middleware finds the user and attaches them to req.user
+    // We exclude the password from being sent back
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
+
 
 module.exports = router;

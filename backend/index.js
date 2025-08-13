@@ -1,28 +1,30 @@
 const express = require('express');
-const cors = require('cors'); // Corrected: require the cors package
+const cors = require('cors');
+const path = require('path');
 const connectDB = require('./db');
-const authRoutes = require('./routes/auth');
 
-// Connect to the database
 connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors()); // Enable CORS for all routes
-app.use(express.json()); // To parse incoming JSON request bodies
+app.use(cors());
+app.use(express.json());
 
 // Define Routes
-// All routes defined in routes/auth.js will be prefixed with /api/auth
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/jobs', require('./routes/jobs'));
+app.use('/api/applications', require('./routes/applications')); // Use application routes
 
-// A simple test route to check if the server is running
+// Serve uploaded files statically
+// This makes files in the 'uploads' folder accessible via URL (e.g., http://localhost:5000/uploads/filename.pdf)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.get('/', (req, res) => {
-  res.send('Authentication API is running...');
+  res.send('API is running...');
 });
 
-// Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
